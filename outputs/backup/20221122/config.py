@@ -89,7 +89,7 @@ layer 1: Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
 layer 2: Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
 layer 3: Linear(64 * 4 * 4, 512)
 layer 4: Linear(512, 1024)
-layer 5: Linear(1024, 2)
+layer 5: Linear(1024, 4)
 '''
 MIDDLE_LAYER_1_SIZE = 1024
 MIDDLE_LAYER_2_SIZE = 128
