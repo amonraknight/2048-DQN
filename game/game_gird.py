@@ -1,8 +1,5 @@
 from tkinter import Frame, Label, CENTER, Button
 import threading
-import numpy as np
-import math
-import copy
 import torch
 
 import config as c
@@ -18,7 +15,6 @@ class GameGrid(Frame):
 
         # A button to start auto-solve
         Button(frame, text='DQN play', command=self.start_dqn_thread).grid(column=0, row=1)
-        ## Button(frame, text='Refresh', command=self.refresh).grid(column=1, row=2)
 
         self.master.bind("<Key>", self.key_down)
 
@@ -85,12 +81,6 @@ class GameGrid(Frame):
     def key_down(self, event):
         print(event)
         print('Manual operation not allowed.')
-        '''
-        if key == c.KEY_QUIT:
-            exit()
-        elif key in self.commands:
-            self.commit_move(key)
-        '''
 
     def start_dqn_thread(self):
         thread = threading.Thread(target=self.auto_solve, args=())
@@ -143,7 +133,6 @@ class GameGrid(Frame):
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 break
-
 
 
 if __name__ == "__main__":
