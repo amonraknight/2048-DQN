@@ -15,6 +15,7 @@ I added some new features on the basis of the 2 authors.
 * Modules from previous trainings can be loaded to continue the training. However, as the memory is not restorable, the continued training will start from a much less valuable group of memory.
 * The reward is not only the score of an action. The changes in monotonicity is another parameter in reward calculation, as it is always prefered by human players that all the cells are always increasing or decreasing in one direction.
 * Avoid the invalid actions. The network may ask the cells to move up when they can't. I gave the invalid action a negative reward. Moreover, when the brain gives invalid actions repetitively, choose a random step instead. 
+* Use numba to accelerate.
 
 ## Library Versions
 * Python 3.9
