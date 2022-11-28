@@ -2,6 +2,7 @@ import numpy as np
 import math
 import copy
 import torch
+from numba import njit
 from stopwatch import Stopwatch
 
 import game_logic as logic
@@ -31,7 +32,7 @@ class Game2048NoDisplay:
 
     def observe(self):
         # number of each cell
-        cells = np.array(self.matrix).flatten()
+        cells = self.matrix.flatten()
         cells = np.array(list(map(lambda x: math.log2(max(x, 1)) / 16, cells)))
         # game is over or not. 'win', 'lose', 'not over'
         status = logic.game_state(self.matrix)
