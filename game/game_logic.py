@@ -146,7 +146,7 @@ def get_possible_actions(game):
         "Right": right
     }
     for each_possible_move in ["Up", "Down", "Left", "Right"]:
-        next_matrix, done, _ = commands[each_possible_move](game)
+        _, done, _ = commands[each_possible_move](game)
         if done:
             actions_l.append(1)
         else:
