@@ -10,6 +10,21 @@ import config as c
 from agent.agent import Agent
 
 
+def cast_matrix_to_10channels(cells):
+    expended_array = None
+    for i in range(1, 11):
+        temp_array = np.where(cells == math.pow(2, i), 1, 0)
+        temp_array = np.expand_dims(temp_array, axis=0)
+        if i == 1:
+            expended_array = temp_array
+        else:
+            expended_array = np.append(expended_array, temp_array, axis=0)
+
+    expended_array = torch.from_numpy(expended_array).type(torch.FloatTensor)
+    expended_array = torch.unsqueeze(expended_array, 0)
+    return expended_array
+
+
 class Game2048NoDisplay:
     def __init__(self):
         self.matrix = logic.new_game(c.GRID_LEN)
@@ -31,9 +46,8 @@ class Game2048NoDisplay:
         self.stop_watch = Stopwatch()
 
     def observe(self):
-        # number of each cell
-        cells = self.matrix.flatten()
-        cells = np.array(list(map(lambda x: math.log2(max(x, 1)) / 16, cells)))
+        # return the original matrix
+        cells = self.matrix
         # game is over or not. 'win', 'lose', 'not over'
         status = logic.game_state(self.matrix)
         # possible actions
@@ -63,8 +77,7 @@ class Game2048NoDisplay:
             cells, status, action_l = self.reset()
 
             # Prepare the state in tensor[[]]
-            state = torch.from_numpy(cells).type(torch.FloatTensor)
-            state = torch.unsqueeze(state, 0)
+            state = cast_matrix_to_10channels(cells)
 
             step = 0
             invalid_step_count = c.INVALID_STEP_TOLERATE
@@ -73,17 +86,17 @@ class Game2048NoDisplay:
 
                 if action_l[action] == 1:
                     # Commit the step: tensor.item converts the tensor with a single item to a single value.
-                    state_next, status, action_l, reward = self.step(action.item())
+                    next_cells, status, action_l, reward = self.step(action.item())
                     step += 1
                     invalid_step_count = c.INVALID_STEP_TOLERATE
                 else:
                     invalid_step_count -= 1
-                    state_next = cells
+                    next_cells = cells
                     reward = torch.FloatTensor([[c.INVALID_STEP_SCORE]])
 
-                state_next = torch.from_numpy(state_next).type(torch.FloatTensor)
-                state_next = torch.unsqueeze(state_next, 0)
+                state_next = cast_matrix_to_10channels(next_cells)
 
+                # Keep the 10-channel states
                 self.agent.memorize(state, action, state_next, reward)
                 # Update the neronet after a configured interval.
                 if episode % c.TRAIN_INTERVAL == 0:
@@ -148,8 +161,7 @@ class Game2048NoDisplay:
             cells, status, action_l = self.reset()
 
             # Prepare the state in tensor[[]]
-            state = torch.from_numpy(cells).type(torch.FloatTensor)
-            state = torch.unsqueeze(state, 0)
+            state = cast_matrix_to_10channels(cells)
 
             step = 0
             invalid_step = False
@@ -158,15 +170,14 @@ class Game2048NoDisplay:
 
                 if action_l[action] == 1:
                     # Commit the step: tensor.item converts the tensor with a single item to a single value.
-                    state_next, status, action_l, reward = self.step(action.item())
+                    next_cells, status, action_l, reward = self.step(action.item())
                     step += 1
                     invalid_step = False
                 else:
                     invalid_step = True
-                    state_next = cells
+                    next_cells = cells
 
-                state_next = torch.from_numpy(state_next).type(torch.FloatTensor)
-                state_next = torch.unsqueeze(state_next, 0)
+                state_next = cast_matrix_to_10channels(next_cells)
 
                 state = state_next
 
@@ -191,5 +202,5 @@ class Game2048NoDisplay:
 
 if __name__ == "__main__":
     game = Game2048NoDisplay()
-    # game.dqn_train()
-    game.dqn_solve()
+    game.dqn_train()
+    # game.dqn_solve()

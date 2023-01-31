@@ -31,8 +31,9 @@ class CNNNet(nn.Module):
         self.output_num = output_num
         self.out_softmax = out_softmax
 
+        # Give 10 channels
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, conv_size[0], kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(10, conv_size[0], kernel_size=3, stride=1, padding=1),
             # nn.BatchNorm2d(32),
             nn.ReLU(inplace=True)
         )
@@ -47,8 +48,9 @@ class CNNNet(nn.Module):
         self.fc2 = nn.Linear(fc_size[0], fc_size[1])
         self.head = nn.Linear(fc_size[1], self.output_num)
 
+    # The input is supposed to be a tensor of 10 * GRID_LEN * GRID_LEN.
     def forward(self, x):
-        x = x.reshape(-1, 1, self.input_len, self.input_len)
+
         x = self.conv1(x)
         x = self.conv2(x)
         x = x.view(x.size(0), -1)
