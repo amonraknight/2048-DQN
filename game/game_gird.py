@@ -1,6 +1,7 @@
 from tkinter import Frame, Label, CENTER, Button
 import threading
 import torch
+import time
 
 import config as c
 from game_nodisplay import Game2048NoDisplay
@@ -122,6 +123,9 @@ class GameGrid(Frame):
             state_next = torch.unsqueeze(state_next, 0)
 
             state = state_next
+
+            # wait
+            time.sleep(1)
 
             if status == 'win' or status == 'lose':
                 print('Finished after %d steps in status %s score %d.' % (step_count, status, self.game.total_score))
