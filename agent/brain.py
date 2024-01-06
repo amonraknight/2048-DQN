@@ -1,8 +1,8 @@
-import numpy
 import torch
 from torch import optim
 import numpy as np
 import random
+
 
 import config
 from agent.dueling_net import CNNNet
@@ -60,11 +60,8 @@ class Brain:
         if self.buffer.memory_counter < config.CAPACITY:
             return
 
-        # self.batch, self.state_batch, self.action_batch, self.reward_batch, self.next_states, \
-        # self.tree_idx, self.ISWeights = self.make_minibatch()
-
         self.batch, self.state_batch, self.action_batch, self.reward_batch, self.next_states, \
-        self.tree_idx, self.ISWeights = self.make_minibatch_all_directions()
+        self.tree_idx, self.ISWeights = self.make_minibatch()
 
         self.expected_state_action_values = self.get_expected_state_action_values()
         self.update_main_q_network()
@@ -111,28 +108,6 @@ class Brain:
 
         return batch, state_batch, action_batch, reward_batch, next_states, tree_idx, ISWeights
 
-    def make_minibatch_all_directions(self):
-        transactions, (tree_idx, ISWeights) = self.buffer.sample(config.BATCH_SIZE)
-
-        batch = Transition(*zip(*transactions))
-        state_batch = torch.cat(batch.state)
-        action_batch = torch.cat(batch.action)
-        reward_batch = torch.cat(batch.reward)
-        next_states = torch.cat(batch.next_state)
-
-        new_tree_idx = tree_idx
-        new_ISWeights = ISWeights
-        for i in range(1, 8):
-            new_tree_idx = numpy.append(new_tree_idx, tree_idx)
-            new_ISWeights = numpy.append(new_ISWeights, tree_idx)
-
-        state_batch = get_states_in_all_dir(state_batch)
-        action_batch = get_actions_in_all_dir(action_batch, self.device)
-        reward_batch = get_multiplied_rewards(reward_batch)
-        next_states = get_states_in_all_dir(next_states)
-
-        return batch, state_batch, action_batch, reward_batch, next_states, new_tree_idx, new_ISWeights
-
     def update_main_q_network(self):
         # Train mode:
         self.main_q_network.train()
@@ -160,51 +135,8 @@ class Brain:
         self.state_action_values = self.main_q_network(self.state_batch).gather(1, self.action_batch)
         next_state_values = self.target_q_network(self.next_states).detach()
         next_state_action_values = self.main_q_network(self.next_states)
-        q_eval_argmax = next_state_action_values.max(1)[1].view(next_state_action_values.shape[0], 1)
-        next_state_values = next_state_values.gather(1, q_eval_argmax).view(next_state_values.shape[0], 1)
+        q_eval_argmax = next_state_action_values.max(1)[1].view(config.BATCH_SIZE, 1)
+        next_state_values = next_state_values.gather(1, q_eval_argmax).view(config.BATCH_SIZE, 1)
         expected_state_action_values = self.reward_batch + config.GAMMA * next_state_values
 
         return expected_state_action_values
-
-
-# Transform each single state into all 8 directions and concatenate.
-# Input: a tensor of BATCH_SIZE*10*GRID_LEN*GRID_LEN
-def get_states_in_all_dir(state):
-    state_reshape_1 = torch.flip(state, [3])
-    state_reshape_2 = torch.flip(state, [2])
-    state_reshape_3 = torch.transpose(state, 2, 3)
-    state_reshape_4 = torch.flip(state_reshape_2, [3])
-    state_reshape_5 = torch.flip(state_reshape_3, [2])
-    state_reshape_6 = torch.flip(state_reshape_3, [3])
-    state_reshape_7 = torch.flip(state_reshape_5, [3])
-
-    multiplied_state = torch.cat(
-        [state, state_reshape_1, state_reshape_2, state_reshape_3, state_reshape_4, state_reshape_5, state_reshape_6,
-         state_reshape_7], 0)
-    return multiplied_state
-
-
-# Input: a tensor of 128*1
-def convert_each_action(dir_code, single_action):
-    return config.ACTION_NUMBERS_IN_RESHAPE[dir_code][single_action]
-
-
-def get_actions_in_all_dir(action, device):
-    action_tensor_list = []
-    action_ndarray = action.cpu()
-    for i in range(0, 8):
-        action_tensor = action_ndarray.apply_(lambda x: convert_each_action(i, x))
-        action_tensor_list.append(action_tensor)
-
-    multiplied_actions = torch.cat(action_tensor_list, 0)
-    multiplied_actions = multiplied_actions.to(device=device)
-    return multiplied_actions
-
-
-def get_multiplied_rewards(reward_batch):
-    reward_batch_list = []
-    for i in range(0, 8):
-        reward_batch_list.append(reward_batch)
-
-    multiplied_reward = torch.cat(reward_batch_list, 0)
-    return multiplied_reward
