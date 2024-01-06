@@ -7,6 +7,7 @@ GRID_PADDING = 10
 BACKGROUND_COLOR_GAME = "#92877d"
 BACKGROUND_COLOR_CELL_EMPTY = "#9e948a"
 
+
 BACKGROUND_COLOR_DICT = {
     2: "#eee4da",
     4: "#ede0c8",
@@ -45,6 +46,7 @@ CELL_COLOR_DICT = {
     65536: "#f9f6f2",
 }
 
+
 FONT = ("Verdana", 40, "bold")
 
 KEY_QUIT = "Escape"
@@ -77,9 +79,9 @@ ACTION_NUMBERS = {
 # DQN parameters
 LEARNING_RATE = 0.0001
 GAMMA = 0.99
-CAPACITY = 5000
+CAPACITY = 10000
 BATCH_SIZE = 128
-NUM_EPISODES = 150000
+NUM_EPISODES = 100000
 MIDDLE_LAYER_1_SIZE = 1024
 MIDDLE_LAYER_2_SIZE = 128
 TARGET_NET_UPDATE_INTERVAL = 4
@@ -106,55 +108,3 @@ REWARD_STRATEGY = 'merged cells & mono-sequential'
 SKIP_IMPOSSIBLE_ACTION = False
 
 TEST_ROUND = 100
-
-# The action conversion in all 8 directions.
-ACTION_NUMBERS_IN_RESHAPE = {
-    0: {
-        0: 0,
-        1: 1,
-        2: 2,
-        3: 3
-    },
-    1: {
-        0: 0,
-        1: 1,
-        2: 3,
-        3: 2
-    },
-    2: {
-        0: 1,
-        1: 0,
-        2: 2,
-        3: 3
-    },
-    3: {
-        0: 2,
-        1: 3,
-        2: 0,
-        3: 1
-    },
-    4: {
-        0: 1,
-        1: 0,
-        2: 3,
-        3: 2
-    },
-    5: {
-        0: 2,
-        1: 3,
-        2: 1,
-        3: 0
-    },
-    6: {
-        0: 3,
-        1: 2,
-        2: 1,
-        3: 0
-    },
-    7: {
-        0: 3,
-        1: 2,
-        2: 0,
-        3: 1
-    }
-}
